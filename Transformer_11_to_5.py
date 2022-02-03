@@ -512,11 +512,19 @@ fig.suptitle('The position of the ball')
 p, q = iter(test_loader).__next__()
 for i in range(scenes):
     r = model(p).detach()
-    print(p.shape, q.shape, r.shape)
-    axs[i].plot(p[i][:, 0], p[i][:, 1], color = "red")
-    axs[i].plot(q[i][:, 0], q[i][:, 1], color ="blue")
-    axs[i].plot(r[i][:, 0], r[i][:, 1], color ="green")
-
+    p_ = p[i].permute(1,0, 2)
+    
+    for j in range(len(p_)):
+        axs[i].plot(p_[j][:, 0], p_[j][:, 1], color ="red")
+        
+    q_ = q[i].permute(1, 0, 2)
+    for j in range(len(q_)):
+        axs[i].plot(q_[j][:, 0], q_[j][:, 1], color ="blue")
+        
+    r_ = r[i].permute(1, 0, 2)
+    for j in range(len(r_)):
+        axs[i].plot(r_[j][:, 0], r_[j][:, 1], color ="green")
+        
 
 # In[ ]:
 
