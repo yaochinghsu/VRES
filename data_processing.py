@@ -62,6 +62,46 @@ def get_sources_targets(game_data, flag_index):
         
     return sources, targets
 
+def get_sources_targets_short(game_data, flag_index, data_size):
+    sources=[]
+    targets=[]
+    data_size = data_size *11
+    
+    for i in range(len(flag_index)-1):
+        
+        if (flag_index[i]+ 2*data_size+11) >= flag_index[i+1]:
+              continue
+        source = torch.tensor(game_data[flag_index[i]: flag_index[i]+ data_size]).view(-1, 11, 2).float()
+        target = torch.tensor(game_data[flag_index[i]+ data_size:flag_index[i]+ 2*data_size]).view(-1, 11, 2).float()
+        
+        sources.append(source)
+        targets.append(target)
+        
+    return sources, targets
+
+def get_speed_short(game_data, flag_index, data_size):
+    
+    totals =[]
+    s_speed =torch.zeros(data_size, 11, 2)
+    t_speed =torch.zeros(data_size, 11, 2)
+       
+    s_speeds = []
+    t_speeds = []
+    for i in range(len(flag_index)-1):      
+        if (flag_index[i]+ 2*11*data_size +11) >= flag_index[i+1]:
+              continue
+        total = torch.tensor(game_data[flag_index[i]: flag_index[i]+ 2*11*data_size +11]).view(-1, 11, 2).float()
+        
+        
+        for j in range(len(total)-1):
+            if j < data_size:
+                s_speed[j] = total[j+1][..., :]-total[j][..., :]  
+            t_speed[j-data_size] = total[j+1][..., :]-total[j][..., :]  
+         
+        s_speeds.append(s_speed)
+        t_speeds.append(t_speed)
+    
+    return s_speeds, t_speeds
 
 def get_source_target(sources, targets, s_ordinal=0, s_count=1, t_ordinal = 0, t_count=1):
     
@@ -74,6 +114,23 @@ def get_source_target(sources, targets, s_ordinal=0, s_count=1, t_ordinal = 0, t
     for target in targets:
         temp = target[:, t_ordinal: t_ordinal+t_count, :].float()
         t.append(temp)
+      
+    return s, t
+
+def get_with_speed(sources, s_speeds, s_ordinal, s_count,targets, t_speeds, t_ordinal, t_count):
+    
+    s = []
+    t = []
+    
+    for i in range(len(sources)):
+        temp = sources[i][:, s_ordinal: s_ordinal+s_count, :].float()
+        temp_s = s_speeds[i][:, s_ordinal: s_ordinal+s_count, :].float()
+        s.append(torch.cat((temp, temp_s), 2))
+            
+    for i in range(len(targets)):
+        temp = targets[i][:, t_ordinal: t_ordinal+t_count, :].float()
+        temp_s = t_speeds[i][:, t_ordinal: t_ordinal+t_count, :].float()
+        t.append(torch.cat((temp, temp_s), 2))
       
     return s, t
 
